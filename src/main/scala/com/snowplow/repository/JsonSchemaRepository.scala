@@ -1,15 +1,15 @@
 package com.snowplow.repository
 
-import cats.effect.IO
+import cats.effect.Async
 import com.snowplow.model.JsonSchema
 import doobie.Transactor
 import doobie.implicits._
 
-class JsonSchemaRepository(transactor: Transactor[IO]) {
-  def insert(jsonSchema: JsonSchema): IO[Int] =
-    sql"""insert into json_schemas (id, schema_value) values (${jsonSchema.id}, ${jsonSchema.value})""".update.run
+class JsonSchemaRepository[F[_]: Async](transactor: Transactor[F]) {
+  def insert(jsonSchema: JsonSchema): F[Int] =
+    sql"""insert into json_schemas (id, content) values (${jsonSchema.id}, ${jsonSchema.content})""".update.run
       .transact(transactor)
 
-  def findById(id: String): IO[Option[JsonSchema]] =
+  def findById(id: String): F[Option[JsonSchema]] =
     sql"""select * from json_schemas where id = $id""".query[JsonSchema].option.transact(transactor)
 }

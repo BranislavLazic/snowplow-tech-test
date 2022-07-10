@@ -1,23 +1,47 @@
 package com.snowplow.route
 
-import cats.effect.IO
+import cats.effect.Async
+import cats.implicits._
+import com.snowplow.model.{ JsonSchema, ServiceResponse }
 import com.snowplow.service.JsonSchemaService
-import org.http4s.{ HttpRoutes, Response }
-import org.http4s.dsl.Http4sDsl
+import io.circe.Json
 import io.circe.generic.auto._
+import org.http4s.Header.Raw
 import org.http4s.circe.CirceEntityCodec._
+import org.http4s.dsl.Http4sDsl
+import org.http4s.headers.`Content-Type`
+import org.http4s._
+import org.typelevel.ci.CIString
 
-object JsonSchemaRoutes extends Http4sDsl[IO] {
+class JsonSchemaRoutes[F[_]](implicit F: Async[F]) extends Http4sDsl[F] {
 
-  def routes(jsonSchemaService: JsonSchemaService): HttpRoutes[IO] = HttpRoutes.of[IO] {
-    case req @ POST -> Root / "schema" / schemaId => Ok("")
-    case GET -> Root / "schema" / schemaId =>
-      handleSchemaDownload(schemaId, jsonSchemaService)
+  def routes(jsonSchemaService: JsonSchemaService[F]): HttpRoutes[F] = HttpRoutes.of[F] {
+    case req @ POST -> Root / "schema" / schemaId => handleJsonUpload(jsonSchemaService, schemaId, req)
+    case GET -> Root / "schema" / schemaId        => handleSchemaDownload(jsonSchemaService, schemaId)
   }
 
-  private def handleSchemaDownload(schemaId: String, jsonSchemaService: JsonSchemaService): IO[Response[IO]] =
+  private def handleJsonUpload(
+      jsonSchemaService: JsonSchemaService[F],
+      schemaId: String,
+      req: Request[F]
+  ): F[Response[F]] =
+    req
+      .attemptAs[Json]
+      .map(json => jsonSchemaService.uploadSchema(schemaId, json.noSpaces))
+      .foldF(
+        _ => BadRequest(ServiceResponse("uploadSchema", schemaId, "error", Some("Invalid JSON"))),
+        _.flatMap {
+          case sr @ ServiceResponse(_, _, "error", _) => Conflict(sr)
+          case sr                                     => Ok(sr)
+        }
+      )
+
+  private def handleSchemaDownload(jsonSchemaService: JsonSchemaService[F], schemaId: String): F[Response[F]] =
     jsonSchemaService.downloadSchema(schemaId).flatMap {
-      case Some(value) => Ok(value)
-      case None        => NotFound()
+      case Some(JsonSchema(_, content)) =>
+        Ok(content)
+          .map(_.withContentType(`Content-Type`(MediaType.application.`octet-stream`)))
+          .map(_.withHeaders(Raw(CIString("Content-Disposition"), s"attachment;filename=$schemaId.json")))
+      case None => NotFound()
     }
 }

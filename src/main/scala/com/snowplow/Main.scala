@@ -33,7 +33,9 @@ object Main extends IOApp {
       xa        <- Resource.eval(Database.transactor(config.dbConfig, dbExecCtx))
       srv <- BlazeServerBuilder[IO]
         .bindHttp(config.serverConfig.port, config.serverConfig.host)
-        .withHttpApp(JsonSchemaRoutes.routes(new JsonSchemaService(new JsonSchemaRepository(xa))).orNotFound)
+        .withHttpApp(
+          new JsonSchemaRoutes[IO].routes(new JsonSchemaService[IO](new JsonSchemaRepository[IO](xa))).orNotFound
+        )
         .resource
     } yield srv
 
