@@ -40,6 +40,7 @@ lazy val `snowplow-tech-test` =
         library.doobieCore,
         library.doobieHikari,
         library.doobiePostgres,
+        library.flyway,
         library.http4sCirce,
         library.http4sDsl,
         library.http4sServer,
@@ -70,6 +71,7 @@ lazy val library =
       val circe       = "0.14.2"
       val circeConfig = "0.8.0"
       val doobie      = "1.0.0-RC2"
+      val flyway      = "8.5.13"
       val http4s      = "0.23.12"
       val scalatest   = "3.2.12"
     }
@@ -79,8 +81,9 @@ lazy val library =
     val doobieCore     = "org.tpolecat"  %% "doobie-core"         % Version.doobie
     val doobieHikari   = "org.tpolecat"  %% "doobie-hikari"       % Version.doobie
     val doobiePostgres = "org.tpolecat"  %% "doobie-postgres"     % Version.doobie
+    val flyway         = "org.flywaydb"   % "flyway-core"         % Version.flyway
     val http4sCirce    = "org.http4s"    %% "http4s-circe"        % Version.http4s
     val http4sDsl      = "org.http4s"    %% "http4s-dsl"          % Version.http4s
-    val http4sServer   = "org.http4s"    %% "http4s-ember-server" % Version.http4s
+    val http4sServer   = "org.http4s"    %% "http4s-blaze-server" % Version.http4s
     val scalatest      = "org.scalatest" %% "scalatest"           % Version.scalatest
   }
