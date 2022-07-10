@@ -7,15 +7,15 @@ import com.snowplow.service.JsonSchemaService
 import io.circe.Json
 import io.circe.generic.auto._
 import org.http4s.Header.Raw
+import org.http4s._
 import org.http4s.circe.CirceEntityCodec._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.headers.`Content-Type`
-import org.http4s._
 import org.typelevel.ci.CIString
 
-class JsonSchemaRoutes[F[_]](implicit F: Async[F]) extends Http4sDsl[F] {
+class JsonSchemaRoutes[F[_]](jsonSchemaService: JsonSchemaService[F])(implicit F: Async[F]) extends Http4sDsl[F] {
 
-  def routes(jsonSchemaService: JsonSchemaService[F]): HttpRoutes[F] = HttpRoutes.of[F] {
+  def routes: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "schema" / schemaId => handleJsonUpload(jsonSchemaService, schemaId, req)
     case GET -> Root / "schema" / schemaId        => handleSchemaDownload(jsonSchemaService, schemaId)
   }

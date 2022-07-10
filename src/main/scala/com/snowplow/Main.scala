@@ -2,27 +2,26 @@ package com.snowplow
 
 import cats.effect.{ ExitCode, IO, IOApp, Resource }
 import com.snowplow.config.{ Config, Database, DbConfig }
-import com.snowplow.repository.JsonSchemaRepository
+import com.snowplow.repository.JsonSchemaRepositoryImpl
 import com.snowplow.route.JsonSchemaRoutes
 import com.snowplow.service.JsonSchemaService
 import doobie.ExecutionContexts
 import org.flywaydb.core.Flyway
+import org.flywaydb.core.api.output.MigrateResult
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.Server
 
 object Main extends IOApp {
 
-  private def initMigrations(dbConfig: DbConfig): Resource[IO, Unit] = Resource.eval(
-    IO
-      .delay {
-        Flyway
-          .configure()
-          .dataSource(dbConfig.url, dbConfig.username, dbConfig.password)
-          .load()
-          .migrate()
-      }
-      .as(())
+  private def initMigrations(dbConfig: DbConfig): Resource[IO, MigrateResult] = Resource.eval(
+    IO.delay {
+      Flyway
+        .configure()
+        .dataSource(dbConfig.url, dbConfig.username, dbConfig.password)
+        .load()
+        .migrate()
+    }
   )
 
   private def initServer: Resource[IO, Server] =
@@ -34,7 +33,7 @@ object Main extends IOApp {
       srv <- BlazeServerBuilder[IO]
         .bindHttp(config.serverConfig.port, config.serverConfig.host)
         .withHttpApp(
-          new JsonSchemaRoutes[IO].routes(new JsonSchemaService[IO](new JsonSchemaRepository[IO](xa))).orNotFound
+          new JsonSchemaRoutes[IO](new JsonSchemaService[IO](new JsonSchemaRepositoryImpl[IO](xa))).routes.orNotFound
         )
         .resource
     } yield srv

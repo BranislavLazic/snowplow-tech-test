@@ -45,7 +45,8 @@ lazy val `snowplow-tech-test` =
         library.http4sCirce,
         library.http4sDsl,
         library.http4sServer,
-        library.scalatest % Test
+        library.scalatest % Test,
+        library.scalamock % Test
       ),
     )
 
@@ -76,6 +77,7 @@ lazy val library =
       val fs2         = "3.2.9"
       val http4s      = "0.23.12"
       val scalatest   = "3.2.12"
+      val scalamock   = "5.2.0"
     }
     val circeCore      = "io.circe"      %% "circe-core"          % Version.circe
     val circeConfig    = "io.circe"      %% "circe-config"        % Version.circeConfig
@@ -88,5 +90,6 @@ lazy val library =
     val http4sCirce    = "org.http4s"    %% "http4s-circe"        % Version.http4s
     val http4sDsl      = "org.http4s"    %% "http4s-dsl"          % Version.http4s
     val http4sServer   = "org.http4s"    %% "http4s-blaze-server" % Version.http4s
+    val scalamock      = "org.scalamock" %% "scalamock"           % Version.scalamock
     val scalatest      = "org.scalatest" %% "scalatest"           % Version.scalatest
   }

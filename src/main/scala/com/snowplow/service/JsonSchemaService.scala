@@ -13,10 +13,9 @@ class JsonSchemaService[F[_]](jsonSchemaRepository: JsonSchemaRepository[F])(imp
         jsonSchemaRepository.findById(id).map(_.exists(_.id == id))
       uploadResult <-
         if (exists)
-          F.pure(
-            ServiceResponse("uploadSchema", id, "error", Some(s"Schema with id $id already exists."))
-          )
-        else jsonSchemaRepository.insert(JsonSchema(id, value)).map(_ => ServiceResponse("uploadSchema", id, "success"))
+          F.pure(ServiceResponse("uploadSchema", id, "error", Some(s"Schema with id $id already exists.")))
+        else
+          jsonSchemaRepository.insert(JsonSchema(id, value)).map(_ => ServiceResponse("uploadSchema", id, "success"))
 
     } yield uploadResult
 
