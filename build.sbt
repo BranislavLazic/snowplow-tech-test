@@ -34,8 +34,16 @@ lazy val `snowplow-tech-test` =
     .settings(commonSettings)
     .settings(
       libraryDependencies ++= Seq(
-        library.munit           % Test,
-        library.munitScalaCheck % Test,
+        library.circeCore,
+        library.circeConfig,
+        library.circeGeneric,
+        library.doobieCore,
+        library.doobieHikari,
+        library.doobiePostgres,
+        library.http4sCirce,
+        library.http4sDsl,
+        library.http4sServer,
+        library.scalatest % Test
       ),
     )
 
@@ -59,8 +67,20 @@ lazy val commonSettings =
 lazy val library =
   new {
     object Version {
-      val munit = "0.7.26"
+      val circe       = "0.14.2"
+      val circeConfig = "0.8.0"
+      val doobie      = "1.0.0-RC2"
+      val http4s      = "0.23.12"
+      val scalatest   = "3.2.12"
     }
-    val munit           = "org.scalameta" %% "munit"            % Version.munit
-    val munitScalaCheck = "org.scalameta" %% "munit-scalacheck" % Version.munit
+    val circeCore      = "io.circe"      %% "circe-core"          % Version.circe
+    val circeConfig    = "io.circe"      %% "circe-config"        % Version.circeConfig
+    val circeGeneric   = "io.circe"      %% "circe-generic"       % Version.circe
+    val doobieCore     = "org.tpolecat"  %% "doobie-core"         % Version.doobie
+    val doobieHikari   = "org.tpolecat"  %% "doobie-hikari"       % Version.doobie
+    val doobiePostgres = "org.tpolecat"  %% "doobie-postgres"     % Version.doobie
+    val http4sCirce    = "org.http4s"    %% "http4s-circe"        % Version.http4s
+    val http4sDsl      = "org.http4s"    %% "http4s-dsl"          % Version.http4s
+    val http4sServer   = "org.http4s"    %% "http4s-ember-server" % Version.http4s
+    val scalatest      = "org.scalatest" %% "scalatest"           % Version.scalatest
   }
