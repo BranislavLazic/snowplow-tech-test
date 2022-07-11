@@ -51,7 +51,7 @@ class JsonSchemaRoutes[F[_]](jsonSchemaService: JsonSchemaService[F])(implicit F
   private def handleSchemaValidation(schemaId: String, req: Request[F]): F[Response[F]] =
     req
       .attemptAs[Json]
-      .map(json => jsonSchemaService.validateSchema(schemaId, json))
+      .map(json => jsonSchemaService.validateSchema(schemaId, json.deepDropNullValues))
       .foldF(
         _ => BadRequest(ServiceResponse("uploadSchema", schemaId, "error", Some("Invalid JSON"))),
         _.flatMap {

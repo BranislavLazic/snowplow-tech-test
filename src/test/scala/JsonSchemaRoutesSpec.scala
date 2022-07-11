@@ -158,7 +158,6 @@ class JsonSchemaRoutesSpec extends BaseSpec {
         service.orNotFound.run(
           Request(method = Method.POST, uri = uri"/validate/config-schema").withEntity(
             json"""{
-                     "source": "/home/alice/image.iso",
                      "destination": "/mnt/storage",
                      "timeout": null,
                      "chunks": {
@@ -178,7 +177,7 @@ class JsonSchemaRoutesSpec extends BaseSpec {
             "config-schema",
             "error",
             Some(
-              """Property '/root/chunks/number' instance type (null) does not match any allowed primitive type (allowed: ["integer"])"""
+              """Property '/root' object has missing required properties (["source"])"""
             )
           ).asJson
         )
