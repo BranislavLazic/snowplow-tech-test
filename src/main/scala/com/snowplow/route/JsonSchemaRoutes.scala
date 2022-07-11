@@ -6,6 +6,7 @@ import com.snowplow.model.{ JsonSchema, ServiceResponse }
 import com.snowplow.service.JsonSchemaService
 import io.circe.Json
 import io.circe.generic.auto._
+import io.circe.syntax._
 import org.http4s.Header.Raw
 import org.http4s._
 import org.http4s.circe.CirceEntityCodec._
@@ -16,23 +17,23 @@ import org.typelevel.ci.CIString
 class JsonSchemaRoutes[F[_]](jsonSchemaService: JsonSchemaService[F])(implicit F: Async[F]) extends Http4sDsl[F] {
 
   def routes: HttpRoutes[F] = HttpRoutes.of[F] {
-    case req @ POST -> Root / "schema" / schemaId => handleJsonUpload(jsonSchemaService, schemaId, req)
+    case req @ POST -> Root / "schema" / schemaId => handleSchemaUpload(jsonSchemaService, schemaId, req)
     case GET -> Root / "schema" / schemaId        => handleSchemaDownload(jsonSchemaService, schemaId)
   }
 
-  private def handleJsonUpload(
+  private def handleSchemaUpload(
       jsonSchemaService: JsonSchemaService[F],
       schemaId: String,
       req: Request[F]
   ): F[Response[F]] =
     req
       .attemptAs[Json]
-      .map(json => jsonSchemaService.uploadSchema(schemaId, json.noSpaces))
+      .map(json => jsonSchemaService.uploadSchema(schemaId, json.deepDropNullValues.noSpaces))
       .foldF(
         _ => BadRequest(ServiceResponse("uploadSchema", schemaId, "error", Some("Invalid JSON"))),
         _.flatMap {
           case sr @ ServiceResponse(_, _, "error", _) => Conflict(sr)
-          case sr                                     => Ok(sr)
+          case sr                                     => Ok(sr.asJson.dropNullValues)
         }
       )
 

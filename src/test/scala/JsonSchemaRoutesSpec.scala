@@ -78,7 +78,7 @@ class JsonSchemaRoutesSpec extends BaseSpec {
       checkResponse[Json](
         response,
         Status.Ok,
-        Some(ServiceResponse("uploadSchema", "config-schema", "success", None).asJson)
+        Some(ServiceResponse("uploadSchema", "config-schema", "success", None).asJson.dropNullValues)
       ) shouldBe true
     }
   }
