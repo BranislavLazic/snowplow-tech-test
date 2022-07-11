@@ -1,4 +1,4 @@
-GET localhost:8080/schema/test
+GET localhost:8080/schema/config-schema
 
 ###
 POST localhost:8080/schema/config-schema

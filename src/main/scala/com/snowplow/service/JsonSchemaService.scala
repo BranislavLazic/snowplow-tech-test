@@ -44,8 +44,8 @@ class JsonSchemaService[F[_]](jsonSchemaRepository: JsonSchemaRepository[F])(imp
     } yield valid
   }
 
-  private def buildValidationError(processingReport: ProcessingReport): String = {
-    val errorMessage = processingReport
+  private def buildValidationError(processingReport: ProcessingReport): String =
+    processingReport
       .iterator()
       .asScala
       .toSeq
@@ -56,6 +56,4 @@ class JsonSchemaService[F[_]](jsonSchemaRepository: JsonSchemaRepository[F])(imp
         s"Property '/root$pointer' $message"
       }
       .mkString(", ")
-    errorMessage
-  }
 }

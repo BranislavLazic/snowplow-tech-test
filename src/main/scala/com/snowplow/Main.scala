@@ -26,21 +26,20 @@ object Main extends IOApp {
 
   private def initServer: Resource[IO, Server] =
     for {
-      config    <- Resource.eval(Config.load())
-      _         <- initMigrations(config.dbConfig)
-      dbExecCtx <- ExecutionContexts.fixedThreadPool[IO](config.dbConfig.poolSize)
-      xa        <- Resource.eval(Database.transactor(config.dbConfig, dbExecCtx))
-      srv <- BlazeServerBuilder[IO]
+      config     <- Resource.eval(Config.load())
+      _          <- initMigrations(config.dbConfig)
+      dbExecCtx  <- ExecutionContexts.fixedThreadPool[IO](config.dbConfig.poolSize)
+      transactor <- Resource.eval(Database.transactor(config.dbConfig, dbExecCtx))
+      server <- BlazeServerBuilder[IO]
         .bindHttp(config.serverConfig.port, config.serverConfig.host)
         .withHttpApp(
-          new JsonSchemaRoutes[IO](new JsonSchemaService[IO](new JsonSchemaRepositoryImpl[IO](xa))).routes.orNotFound
+          new JsonSchemaRoutes[IO](
+            new JsonSchemaService[IO](new JsonSchemaRepositoryImpl[IO](transactor))
+          ).routes.orNotFound
         )
         .resource
-    } yield srv
+    } yield server
 
-  override def run(args: List[String]): IO[ExitCode] =
-    for {
-      exitCode <- initServer.use(_ => IO.never).as(ExitCode.Success)
-    } yield exitCode
+  override def run(args: List[String]): IO[ExitCode] = initServer.use(_ => IO.never).as(ExitCode.Success)
 
 }
