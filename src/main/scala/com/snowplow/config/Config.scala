@@ -11,7 +11,7 @@ case class Config(dbConfig: DbConfig, serverConfig: ServerConfig)
 object Config {
   def load(): IO[Config] =
     for {
-      dbConf       <- parser.decodePathF[IO, DbConfig]("db")
+      dbConfig     <- parser.decodePathF[IO, DbConfig]("db")
       serverConfig <- parser.decodePathF[IO, ServerConfig]("server")
-    } yield Config(dbConf, serverConfig)
+    } yield Config(dbConfig, serverConfig)
 }

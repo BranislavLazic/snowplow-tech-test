@@ -9,7 +9,7 @@ object SchemaIdValidator {
   private val action            = "validateSchemaId"
 
   def validate(schemaId: String): Validated[ServiceResponse, String] =
-    nonBlank(schemaId).andThen(_ => maxLength(schemaId))
+    nonBlank(schemaId).andThen(maxLength)
 
   private def nonBlank(schemaId: String): Validated[ServiceResponse, String] =
     if (schemaId.isBlank)

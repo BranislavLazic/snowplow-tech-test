@@ -2,7 +2,7 @@ package com.snowplow
 
 import cats.effect.{ ExitCode, IO, IOApp, Resource }
 import com.snowplow.config.{ Config, Database, DbConfig }
-import com.snowplow.repository.JsonSchemaRepositoryImpl
+import com.snowplow.repository.PgJsonSchemaRepository
 import com.snowplow.route.JsonSchemaRoutes
 import com.snowplow.service.JsonSchemaService
 import doobie.ExecutionContexts
@@ -15,7 +15,7 @@ import org.http4s.server.Server
 object Main extends IOApp {
 
   private def initMigrations(dbConfig: DbConfig): Resource[IO, MigrateResult] = Resource.eval(
-    IO.delay {
+    IO.blocking {
       Flyway
         .configure()
         .dataSource(dbConfig.url, dbConfig.username, dbConfig.password)
@@ -34,7 +34,7 @@ object Main extends IOApp {
         .bindHttp(config.serverConfig.port, config.serverConfig.host)
         .withHttpApp(
           new JsonSchemaRoutes[IO](
-            new JsonSchemaService[IO](new JsonSchemaRepositoryImpl[IO](transactor))
+            new JsonSchemaService[IO](new PgJsonSchemaRepository[IO](transactor))
           ).routes.orNotFound
         )
         .resource

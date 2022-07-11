@@ -14,5 +14,4 @@ object Database {
     config.setPassword(dbConfig.password)
     IO.pure(HikariTransactor.apply[IO](new HikariDataSource(config), executionContext))
   }
-
 }
